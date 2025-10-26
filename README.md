@@ -1,0 +1,9 @@
+streamlit==1.38.0
+streamlit-folium==0.11.1
+folium==0.14.0
+rasterio
+joblib
+pyproj
+scikit-learn
+numpy
+requests
