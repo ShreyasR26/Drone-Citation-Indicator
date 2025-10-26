@@ -1,5 +1,4 @@
 import streamlit as st
-import rasterio
 import numpy as np
 import joblib
 import os
@@ -29,7 +28,7 @@ class ThresholdedModel(BaseEstimator, ClassifierMixin):
         return self.base_model.predict_proba(X)
 
 # -------------------------------------------------
-# 1️⃣ Cached model & raster loaders
+# 1️⃣ Cached model loader
 # -------------------------------------------------
 @st.cache_resource
 def load_model():
@@ -41,56 +40,30 @@ def load_model():
     st.write(f"✅ Loading model from: {os.path.abspath(model_path)}")
     return joblib.load(model_path)
 
+# -------------------------------------------------
+# 2️⃣ Fake raster + features (no rasterio)
+# -------------------------------------------------
 @st.cache_resource
 def load_raster():
-    """Download large raster from Dropbox if not found locally."""
-    raster_path = "border_us_only_stacked.tif"
-    dropbox_url = (
-        "https://www.dropbox.com/scl/fi/6rvu91g7t03s3biyqwmta/"
-        "border_us_only_stacked.tif?rlkey=9u4jztfaxnv5fxmqniyvwxk8b&st=tmkqhqsf&dl=1"
-    )
+    """Stub for compatibility – returns None since no raster is used."""
+    return None
 
-    if not os.path.exists(raster_path):
-        st.info("⬇️ Downloading raster file (~2.6 GB)… this may take several minutes.")
-        with requests.get(dropbox_url, stream=True) as r:
-            r.raise_for_status()
-            with open(raster_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
-        st.success("✅ Raster downloaded successfully.")
-    return rasterio.open(raster_path)
-
-# -------------------------------------------------
-# 2️⃣ Extract features
-# -------------------------------------------------
-def get_features_from_coords(raster, lon, lat):
-    """Extract feature vector for a given lon/lat (auto CRS conversion)."""
-    try:
-        transformer = Transformer.from_crs("EPSG:4326", raster.crs, always_xy=True)
-        x, y = transformer.transform(lon, lat)
-        bounds = raster.bounds
-        if not (bounds.left <= x <= bounds.right and bounds.bottom <= y <= bounds.top):
-            st.warning("⚠️ Coordinates are outside raster bounds (after projection).")
-            return None
-        row, col = raster.index(x, y)
-        window = rasterio.windows.Window(col, row, 1, 1)
-        data = raster.read(window=window)
-        features = data[:, 0, 0]
-        return np.array(features).reshape(1, -1)
-    except Exception as e:
-        st.error(f"Error extracting features: {e}")
-        return None
+def get_features_from_coords(_, lon, lat):
+    """Generate pseudo-features from lon/lat for demo purposes."""
+    # random seed based on lat/lon for reproducibility
+    rng = np.random.default_rng(abs(int(lon * lat * 1000)) % 2**32)
+    # 6 fake numeric features using lat, lon, and random noise
+    features = np.array([lon, lat] + rng.random(4).tolist()).reshape(1, -1)
+    return features
 
 # -------------------------------------------------
 # 3️⃣ Streamlit UI
 # -------------------------------------------------
 st.set_page_config(page_title="Drone Citation Indicator", layout="wide")
 
-st.title("🛰️ Drone Citation Indicator")
+st.title("🛰️ Drone Citation Indicator (Demo - No RasterIO)")
 st.caption(
-    "Click a location on the map to estimate drone presence "
-    "using a logistic regression model (threshold = 0.7)."
+    "Click a location on the map to estimate drone presence using a logistic regression model (threshold = 0.7)."
 )
 
 # -------------------------------------------------
@@ -98,6 +71,7 @@ st.caption(
 # -------------------------------------------------
 st.subheader("🗺️ Select a location")
 
+# Create Folium map
 m = folium.Map(location=[31.5, -100.0], zoom_start=6)
 map_data = st_folium(m, width=700, height=450)
 
@@ -111,7 +85,7 @@ if map_data and map_data.get("last_clicked"):
 # 5️⃣ Prediction
 # -------------------------------------------------
 if lat is not None and lon is not None and st.button("Predict Drone Probability"):
-    raster = load_raster()
+    raster = load_raster()  # stubbed
     model = load_model()
     X = get_features_from_coords(raster, lon, lat)
 
@@ -135,7 +109,7 @@ st.markdown("---")
 st.markdown(
     """
     **Model:** Logistic Regression (Scaled, Threshold = 0.7)  
-    **Raster CRS:** EPSG: 6350 (NAD83 / Texas Centric Albers Equal Area)  
+    **Raster:** Disabled (demo version without RasterIO)  
     **Map:** Click anywhere to select coordinates  
     """
 )
