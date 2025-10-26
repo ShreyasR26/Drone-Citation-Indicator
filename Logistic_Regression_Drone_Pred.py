@@ -32,7 +32,7 @@ class ThresholdedModel(BaseEstimator, ClassifierMixin):
 # -------------------------------------------------
 @st.cache_resource
 def load_model():
-    model_path = "/Users/shreyasramani/Downloads/drone_logisticreg_model.pkl"
+    model_path = "drone_logisticreg_model.pkl"
     if not os.path.exists(model_path):
         st.error(f"❌ Model not found at: {model_path}")
         st.stop()
