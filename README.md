@@ -6,3 +6,7 @@ joblib
 pyproj
 scikit-learn
 requests
+rasterio
+shap==0.45.0
+matplotlib
+pandas
