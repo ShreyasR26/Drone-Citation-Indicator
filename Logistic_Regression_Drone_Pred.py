@@ -1,3 +1,4 @@
+os.system('pip install -r requirements.txt')
 import streamlit as st
 import rasterio
 from rasterio.io import MemoryFile
