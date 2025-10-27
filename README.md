@@ -2,11 +2,11 @@ streamlit==1.38.0
 streamlit-folium==0.11.1
 folium==0.14.0
 numpy==1.26.4
-joblib
+joblib==1.4.2
 pyproj
-scikit-learn
+scikit-learn==1.5.2
 requests
-rasterio
+rasterio==1.3.9
 shap==0.45.0
 matplotlib
 pandas
