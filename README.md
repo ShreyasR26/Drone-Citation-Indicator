@@ -6,6 +6,7 @@ joblib==1.4.2
 pyproj
 scikit-learn==1.5.2
 requests
+GDAL==3.6.4
 rasterio==1.3.9
 shap==0.45.0
 matplotlib
